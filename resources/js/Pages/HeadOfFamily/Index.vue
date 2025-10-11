@@ -44,7 +44,7 @@ const searchQuery = ref("");
 const entriesPerPage = ref(5);
 const currentPage = ref(1);
 
-totalPages = computed(() => pagination.value.last_page);
+const totalPages = computed(() => pagination.value.last_page);
 
 const viewFamilyMembers = (id) => {
     router.visit(`/kepala-rumah/${id}/anggota-keluarga`);
@@ -100,7 +100,30 @@ const prevPage = async () => {
     }
 };
 
-watch([searchQuery, entriesPerPage], async () => {
+// Improved search functionality with debounce
+let searchTimeout;
+const handleSearch = (query) => {
+    // Clear previous timeout
+    clearTimeout(searchTimeout);
+
+    // Set new timeout
+    searchTimeout = setTimeout(async () => {
+        currentPage.value = 1;
+        await refreshData({
+            perPage: entriesPerPage.value,
+            page: 1,
+            search: query,
+        });
+    }, 300); // 300ms debounce
+};
+
+// Watch for search query changes
+watch(searchQuery, (newQuery) => {
+    handleSearch(newQuery);
+});
+
+// Watch for entries per page changes
+watch(entriesPerPage, async () => {
     currentPage.value = 1;
     await refreshData({
         perPage: entriesPerPage.value,
@@ -111,6 +134,14 @@ watch([searchQuery, entriesPerPage], async () => {
 
 // Initial data fetch
 onMounted(async () => {
+    // Get search query from URL if exists
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlSearchQuery = urlParams.get("search");
+
+    if (urlSearchQuery) {
+        searchQuery.value = urlSearchQuery;
+    }
+
     await fetchHeadOfFamilies({
         perPage: entriesPerPage.value,
         page: currentPage.value,
@@ -138,7 +169,7 @@ onMounted(async () => {
                 </div>
                 <section
                     id="List-Kepala-Rumah"
-                    class="flex flex-col gap-[14px]"
+                    class="flex flex-col gap-[20px]"
                 >
                     <div
                         id="Page-Search"

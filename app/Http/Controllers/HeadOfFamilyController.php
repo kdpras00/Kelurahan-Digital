@@ -10,6 +10,7 @@ use App\Interface\HeadOfFamilyRepositoryInterface;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Inertia\Inertia;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 
 class HeadOfFamilyController extends Controller implements HasMiddleware
@@ -106,6 +107,47 @@ class HeadOfFamilyController extends Controller implements HasMiddleware
 
         } catch (\Exception $e) {
             return ResponseHelper::jsonResponse(false, $e->getMessage(), null, 500);
+        }
+    }
+
+    /**
+     * Display the specified resource with family members.
+     */
+    public function showWithFamilyMembers(string $id)
+    {
+        try {
+            $headOfFamily = $this->headOfFamilyRepository->getByIdWithFamilyMembers($id);
+
+            if (! $headOfFamily) {
+                return ResponseHelper::jsonResponse(false, 'Data Kepala Keluarga tidak ditemukan', null, 404);
+            }
+
+            return ResponseHelper::jsonResponse(true, 'Data Kepala Keluarga berhasil diambil', new HeadOfFamilyResource($headOfFamily), 200);
+
+        } catch (\Exception $e) {
+            return ResponseHelper::jsonResponse(false, $e->getMessage(), null, 500);
+        }
+    }
+
+    /**
+     * Display the manage page for the specified head of family with family members.
+     */
+    public function manage(string $userId)
+    {
+        try {
+            $headOfFamily = $this->headOfFamilyRepository->getByUserIdWithFamilyMembers($userId);
+
+            if (! $headOfFamily) {
+                return redirect()->route('head-of-family.index');
+            }
+
+            return Inertia::render('HeadOfFamily/Manage', [
+                'headOfFamilyData' => new HeadOfFamilyResource($headOfFamily),
+                'familyMembersData' => $headOfFamily->familyMembers
+            ]);
+
+        } catch (\Exception $e) {
+            return redirect()->route('head-of-family.index');
         }
     }
 

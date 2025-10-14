@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\HeadOfFamilyController;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,15 +35,17 @@ Route::get('/kepala-rumah/create', function () {
 
 Route::get('/kepala-rumah/{id}/edit', function ($id) {
     return Inertia::render('HeadOfFamily/Edit', [
-        'id' => $id
+        'user_id' => $id
     ]);
 })->name('head-of-family.edit');
 
 Route::get('/kepala-rumah/{id}/anggota-keluarga', function ($id) {
     return Inertia::render('HeadOfFamily/FamilyMembers', [
-        'id' => $id
+        'user_id' => $id
     ]);
 })->name('head-of-family.family-members');
+
+Route::get('/kepala-rumah/{user_id}/manage', [HeadOfFamilyController::class, 'manage'])->name('head-of-family.manage');
 
 // Routes for Bantuan Sosial dropdown
 Route::get('/bantuan-sosial/list', function () {

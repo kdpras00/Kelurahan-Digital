@@ -44,8 +44,11 @@ export const useHeadOfFamilyStore = defineStore('headOfFamily', {
           const data = response.data.data
           this.headOfFamilies = data.data.map(item => ({
             id: item.id,
+            userId: item.user?.id || '',
             name: item.user?.name || '',
-            photo: item.profile_picture ? `/storage/${item.profile_picture}` : '@/assets/images/photos/kk-photo-1.png',
+            photo: item.profile_picture ? 
+              (item.profile_picture.startsWith('http') ? item.profile_picture : `/storage/${item.profile_picture}`) : 
+              '/images/photos/kk-photo-1.png',
             occupation: item.occupation || '',
             nik: item.identity_number || '',
             familyMembers: item.family_members ? item.family_members.length : 0

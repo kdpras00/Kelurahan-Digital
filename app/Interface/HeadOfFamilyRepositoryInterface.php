@@ -18,6 +18,18 @@ interface HeadOfFamilyRepositoryInterface
         string $id
     );
 
+    public function getByUserId(
+        string $userId
+    );
+
+    public function getByIdWithFamilyMembers(
+        string $id
+    );
+
+    public function getByUserIdWithFamilyMembers(
+        string $userId
+    );
+
     public function create(array $data);
 
     public function update(

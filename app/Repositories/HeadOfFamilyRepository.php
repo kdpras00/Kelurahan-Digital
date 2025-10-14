@@ -51,6 +51,27 @@ class HeadOfFamilyRepository implements HeadOfFamilyRepositoryInterface
         return $query->first();
     }
 
+    public function getByUserId(string $userId)
+    {
+        $query = HeadOfFamily::where('user_id', $userId);
+
+        return $query->first();
+    }
+
+    public function getByIdWithFamilyMembers(string $id)
+    {
+        $query = HeadOfFamily::where('id', $id)->with('familyMembers');
+
+        return $query->first();
+    }
+
+    public function getByUserIdWithFamilyMembers(string $userId)
+    {
+        $query = HeadOfFamily::where('user_id', $userId)->with('familyMembers');
+
+        return $query->first();
+    }
+
     public function create(
         array $data
     ) {

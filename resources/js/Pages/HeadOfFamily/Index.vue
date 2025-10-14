@@ -50,8 +50,18 @@ const viewFamilyMembers = (id) => {
     router.visit(`/kepala-rumah/${id}/anggota-keluarga`);
 };
 
-const editHeadOfFamily = (id) => {
-    router.visit(`/kepala-rumah/${id}/edit`);
+// const manageHeadOfFamily = (userId) => {
+//     router.visit(`/kepala-rumah/${userId}/manage`);
+// };
+
+const manageHeadOfFamily = (userId) => {
+-  router.visit(`/kepala-rumah/${userId}/manage`);
++  router.visit(`/kepala-rumah/${headOfFamily.id}/manage`);
+};
+
+
+const editHeadOfFamily = (userId) => {
+    router.visit(`/kepala-rumah/${userId}/edit`);
 };
 
 const handleDeleteHeadOfFamily = async (id) => {
@@ -302,11 +312,12 @@ onMounted(async () => {
                             >
                         </p>
                         <button
-                            @click="viewFamilyMembers(headOfFamily.id)"
+                            @click="manageHeadOfFamily(headOfFamily.userId)"
                             class="flex items-center shrink-0 gap-[10px] rounded-2xl py-4 px-6 bg-desa-black"
                         >
                             <span class="font-medium text-white">Manage</span>
                         </button>
+
                     </div>
                 </section>
 

@@ -43,3 +43,32 @@ Route::get('/kepala-rumah/{id}/anggota-keluarga', function ($id) {
         'id' => $id
     ]);
 })->name('head-of-family.family-members');
+
+// Routes for Bantuan Sosial dropdown
+Route::get('/bantuan-sosial/list', function () {
+    return Inertia::render('SocialAssistanceList');
+})->name('social-assistance.list');
+
+Route::get('/bantuan-sosial/pengajuan', function () {
+    return Inertia::render('SocialAssistanceApplication');
+})->name('social-assistance.application');
+
+Route::get('/bantuan-sosial/{id}', function ($id) {
+    return Inertia::render('SocialAssistanceDetail', [
+        'id' => $id
+    ]);
+})->name('social-assistance.detail');
+
+// Routes for Jadwal Desa dropdown
+Route::get('/jadwal-desa/job-vacancy', function () {
+    return Inertia::render('JobVacancy');
+})->name('job-vacancy.index');
+
+Route::get('/jadwal-desa/events', function () {
+    return Inertia::render('VillageEvents');
+})->name('village-events.index');
+
+// Profile Desa route
+Route::get('/profile-desa', function () {
+    return Inertia::render('VillageProfile');
+})->name('village-profile.index');

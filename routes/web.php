@@ -64,11 +64,37 @@ Route::get('/jadwal-desa/job-vacancy', function () {
     return Inertia::render('JobVacancy');
 })->name('job-vacancy.index');
 
+Route::get('/jadwal-desa/job-vacancy/detail/{id}', function ($id) {
+    return Inertia::render('JobVacancyDetail', [
+        'id' => $id
+    ]);
+})->name('job-vacancy.detail');
+
 Route::get('/jadwal-desa/events', function () {
     return Inertia::render('VillageEvents');
 })->name('village-events.index');
+
+Route::get('/jadwal-desa/events/create', function () {
+    return Inertia::render('VillageEventsCreate');
+})->name('village-events.create');
+
+Route::get('/jadwal-desa/events/{id}', function ($id) {
+    return Inertia::render('VillageEventsDetail', [
+        'id' => $id
+    ]);
+})->name('village-events.detail');
+
+Route::get('/jadwal-desa/events/{id}/edit', function ($id) {
+    return Inertia::render('VillageEventsEdit', [
+        'id' => $id
+    ]);
+})->name('village-events.edit');
 
 // Profile Desa route
 Route::get('/profile-desa', function () {
     return Inertia::render('VillageProfile');
 })->name('village-profile.index');
+
+Route::get('/profile-desa/edit', function () {
+    return Inertia::render('VillageProfileEdit');
+})->name('village-profile.edit');

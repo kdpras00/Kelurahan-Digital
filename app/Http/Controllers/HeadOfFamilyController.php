@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Helpers\ResponseHelper;
@@ -10,6 +11,7 @@ use App\Interface\HeadOfFamilyRepositoryInterface;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 
@@ -68,8 +70,9 @@ class HeadOfFamilyController extends Controller implements HasMiddleware
 
             return ResponseHelper::jsonResponse(true, 'Data Kepala Keluarga Berhasil Diambil', PaginateResource::make($headOfFamilies, HeadOfFamilyResource::class), 200);
         } catch (\Exception $e) {
-            //throw $th;
-            return ResponseHelper::jsonResponse(false, 'Data Kepala Keluarga gagal diambil', null, 500);
+            // Log the error for debugging
+            Log::error('Error in getAllPaginated: ' . $e->getMessage());
+            return ResponseHelper::jsonResponse(false, 'Data Kepala Keluarga gagal diambil: ' . $e->getMessage(), null, 500);
         }
     }
 
@@ -104,7 +107,6 @@ class HeadOfFamilyController extends Controller implements HasMiddleware
             }
 
             return ResponseHelper::jsonResponse(true, 'Data Kepala Keluarga berhasil diambil', new HeadOfFamilyResource($headOfFamily), 200);
-
         } catch (\Exception $e) {
             return ResponseHelper::jsonResponse(false, $e->getMessage(), null, 500);
         }
@@ -123,7 +125,6 @@ class HeadOfFamilyController extends Controller implements HasMiddleware
             }
 
             return ResponseHelper::jsonResponse(true, 'Data Kepala Keluarga berhasil diambil', new HeadOfFamilyResource($headOfFamily), 200);
-
         } catch (\Exception $e) {
             return ResponseHelper::jsonResponse(false, $e->getMessage(), null, 500);
         }
@@ -142,14 +143,14 @@ class HeadOfFamilyController extends Controller implements HasMiddleware
             }
 
             return Inertia::render('HeadOfFamily/Manage', [
-                'headOfFamilyData' => new HeadOfFamilyResource($headOfFamily),
+                'headOfFamilyData' => (new HeadOfFamilyResource($headOfFamily))->resolve(),
                 'familyMembersData' => $headOfFamily->familyMembers
             ]);
-
         } catch (\Exception $e) {
             return redirect()->route('head-of-family.index');
         }
     }
+
 
     /**
      * Update the specified resource in storage.

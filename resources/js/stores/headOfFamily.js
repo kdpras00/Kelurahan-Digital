@@ -38,10 +38,14 @@ export const useHeadOfFamilyStore = defineStore('headOfFamily', {
             page: params.page || this.pagination.current_page,
           }
         })
-        
+    
+        console.log('API Response:', response.data); // Add this for debugging
+    
         if (response.data && response.data.data) {
           // Extract data and pagination info
           const data = response.data.data
+          console.log('Data from API:', data); // Add this for debugging
+          
           this.headOfFamilies = data.data.map(item => ({
             id: item.id,
             userId: item.user?.id || '',
@@ -53,6 +57,8 @@ export const useHeadOfFamilyStore = defineStore('headOfFamily', {
             nik: item.identity_number || '',
             familyMembers: item.family_members ? item.family_members.length : 0
           }))
+          
+          console.log('Processed headOfFamilies:', this.headOfFamilies); // Add this for debugging
           
           // Update pagination
           this.pagination = {

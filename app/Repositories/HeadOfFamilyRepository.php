@@ -1,17 +1,20 @@
 <?php
+
 namespace App\Repositories;
 
 use App\Interface\HeadOfFamilyRepositoryInterface;
 use App\Models\HeadOfFamily;
 use Exception;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class HeadOfFamilyRepository implements HeadOfFamilyRepositoryInterface
 {
     public function getAll(
         ?string $search,
         ?int $limit,
-        bool $execute) {
+        bool $execute
+    ) {
 
         $query = HeadOfFamily::where(function ($query) use ($search) {
             // kondisi jika melakukan pencarian data yang didefinisikan dalam model user
@@ -38,7 +41,8 @@ class HeadOfFamilyRepository implements HeadOfFamilyRepositoryInterface
 
     public function getAllPaginated(
         ?string $search,
-        ?int $rowPerPage) {
+        ?int $rowPerPage
+    ) {
         $query = $this->getAll($search, $rowPerPage, false);
 
         return $query->paginate($rowPerPage);
@@ -87,11 +91,17 @@ class HeadOfFamilyRepository implements HeadOfFamilyRepositoryInterface
                 'name'     => $data['name'],
                 'email'    => $data['email'],
                 'password' => $data['password'],
-            ])->assignRole('head-of-family');
+            ]);
+
+            // Assign role separately
+            $user->assignRole('head-of-family');
 
             $headOfFamily                  = new HeadOfFamily();
             $headOfFamily->user_id         = $user->id;
-            $headOfFamily->profile_picture = $data['profile_picture']->store('assets/head-of-families', 'public');
+            // Handle file upload properly
+            if (isset($data['profile_picture'])) {
+                $headOfFamily->profile_picture = $data['profile_picture']->store('assets/head-of-families', 'public');
+            }
             $headOfFamily->identity_number = $data['identity_number'];
             $headOfFamily->gender          = $data['gender'];
             $headOfFamily->date_of_birth   = $data['date_of_birth'];
@@ -105,7 +115,8 @@ class HeadOfFamilyRepository implements HeadOfFamilyRepositoryInterface
 
             return $headOfFamily;
         } catch (\Exception $e) {
-            //throw $th;
+            // Log the error for debugging
+            Log::error('Error creating head of family: ' . $e->getMessage());
             DB::rollBack();
             throw new Exception($e->getMessage());
         }

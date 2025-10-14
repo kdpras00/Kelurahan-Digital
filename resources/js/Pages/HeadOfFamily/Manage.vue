@@ -4,6 +4,7 @@ import { router, usePage } from '@inertiajs/vue3'
 import { useAuthStore } from '@/stores/auth'
 import { axiosInstance } from '@/plugins/axios'
 import Sidebar from '@/components/sidebar/Sidebar.vue'
+import Topbar from '@/components/Topbar.vue'
 import Button from '@/components/ui/Button.vue'
 import IconTrashWhite from '@/assets/images/icons/trash-white.svg'
 import IconBriefcaseSecondary from '@/assets/images/icons/briefcase-secondary-green.svg'
@@ -32,9 +33,31 @@ const props = defineProps({
 
 const authStore = useAuthStore()
 
+// Data for recent activity tabs
+const bansosData = ref([])
+const eventsData = ref([])
+const applicantsData = ref([])
+
+// Loading states
+const loadingBansos = ref(true)
+const loadingEvents = ref(true)
+const loadingApplicants = ref(true)
+
 // Protect the route
 onBeforeMount(async () => {
   await authStore.requireAuth()
+})
+
+// Fetch recent activity data when component mounts
+onMounted(async () => {
+  await Promise.all([
+    fetchBansosData(),
+    fetchEventsData(),
+    fetchApplicantsData()
+  ])
+  
+  // Initialize tab functionality
+  initializeTabs()
 })
 
 // Debug: Log the props to see what data is being passed
@@ -90,13 +113,84 @@ const calculateAge = (dateOfBirth) => {
   }
   return age
 }
+
+// Fetch bansos (social assistance) data for the current user
+const fetchBansosData = async () => {
+  try {
+    loadingBansos.value = true
+    // Get social assistance recipients for the current head of family
+    const response = await axiosInstance.get(`/social-assistance-recipient`)
+    bansosData.value = response.data.data || []
+  } catch (error) {
+    console.error('Error fetching bansos data:', error)
+    bansosData.value = []
+  } finally {
+    loadingBansos.value = false
+  }
+}
+
+// Fetch events data for the current user
+const fetchEventsData = async () => {
+  try {
+    loadingEvents.value = true
+    // Get events for the current head of family
+    const response = await axiosInstance.get(`/event`)
+    eventsData.value = response.data.data || []
+  } catch (error) {
+    console.error('Error fetching events data:', error)
+    eventsData.value = []
+  } finally {
+    loadingEvents.value = false
+  }
+}
+
+// Fetch job applicants data for the current user
+const fetchApplicantsData = async () => {
+  try {
+    loadingApplicants.value = true
+    // Get job applicants for the current head of family
+    const response = await axiosInstance.get(`/job-applicant`)
+    applicantsData.value = response.data.data || []
+  } catch (error) {
+    console.error('Error fetching applicants data:', error)
+    applicantsData.value = []
+  } finally {
+    loadingApplicants.value = false
+  }
+}
+
+// Initialize tab functionality
+const initializeTabs = () => {
+  const tabBtns = document.querySelectorAll('.tab-btn')
+  const tabContents = document.querySelectorAll('#Tabs-Content > div')
+
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      // Remove active class from all buttons and contents
+      tabBtns.forEach(b => b.classList.remove('active'))
+      tabContents.forEach(c => c.classList.add('hidden'))
+
+      // Add active class to clicked button
+      btn.classList.add('active')
+
+      // Show corresponding content
+      const contentId = btn.getAttribute('data-content')
+      document.getElementById(contentId).classList.remove('hidden')
+    })
+  })
+}
+
+const head = computed(() => props.headOfFamilyData || {})
+const user = computed(() => head.value.user || {})
+
 </script>
 
 <template>
   <div class="flex">
     <Sidebar />
     <div id="Main-Container" class="flex flex-col flex-1">
-      <div id="Content" class="relative flex flex-col flex-1 gap-6 p-6 pb-[30px] w-full shrink-0">
+      <Topbar />
+      <div id="Content" class="relative flex flex-col flex-1 gap-6 p-6 pb-[30px] w-full shrink-0 mt-[116px]">
         <div id="Header" class="flex items-center justify-between">
           <div class="flex flex-col gap-2">
             <div class="flex gap-1 items-center leading-5 text-desa-secondary">
@@ -126,14 +220,14 @@ const calculateAge = (dateOfBirth) => {
                   >
                 </div>
                 <div class="flex flex-col gap-[6px] w-full">
-                  <p class="font-semibold text-xl line-clamp-1">{{ props.headOfFamilyData.user?.name }}</p>
+                  <p class="font-semibold text-xl line-clamp-1">{{ headOfFamilyData.user?.name || 'no data' }}</p>
                   <p class="flex items-center gap-1">
                     <img :src="IconBriefcaseSecondary" class="flex size-[18px] shrink-0" alt="icon">
-                    <span class="font-medium text-sm text-desa-secondary">{{ props.headOfFamilyData.occupation }}</span>
+                    <span class="font-medium text-sm text-desa-secondary">{{ headOfFamilyData.occupation  }}</span>
                   </p>
                 </div>
                 <div class="badge rounded-full p-3 gap-2 flex w-[100px] justify-center shrink-0 bg-desa-soft-green">
-                  <span class="font-semibold text-xs text-white uppercase">{{ props.headOfFamilyData.marital_status || 'Status' }}</span>
+                  <span class="font-semibold text-xs text-white uppercase">{{ headOfFamilyData.marital_status || 'Status' }}</span>
                 </div>
               </div>
               <hr class="border-desa-foreshadow">
@@ -142,7 +236,7 @@ const calculateAge = (dateOfBirth) => {
                   <img :src="IconKeyboardDarkGreen" class="flex size-6 shrink-0" alt="icon">
                 </div>
                 <div class="flex flex-col gap-1 w-full">
-                  <p class="font-semibold text-xl leading-[22.5px]">{{ props.headOfFamilyData.identity_number }}</p>
+                  <p class="font-semibold text-xl leading-[22.5px]">{{ headOfFamilyData.identity_number || 'no data' }}</p>
                   <span class="font-medium text-desa-secondary">
                     Nomor Induk Kependudukan
                   </span>
@@ -154,7 +248,7 @@ const calculateAge = (dateOfBirth) => {
                   <img :src="IconUserSquareDarkGreen" class="flex size-6 shrink-0" alt="icon">
                 </div>
                 <div class="flex flex-col gap-1 w-full">
-                  <p class="font-semibold text-xl leading-[22.5px]">{{ calculateAge(props.headOfFamilyData.date_of_birth) }} Tahun</p>
+                  <p class="font-semibold text-xl leading-[22.5px]">{{ calculateAge(headOfFamilyData.date_of_birth) }} Tahun</p>
                   <span class="font-medium text-desa-secondary">
                     Umur Kepala Rumah
                   </span>
@@ -166,7 +260,7 @@ const calculateAge = (dateOfBirth) => {
                   <img :src="IconManDarkGreen" class="flex size-6 shrink-0" alt="icon">
                 </div>
                 <div class="flex flex-col gap-1 w-full">
-                  <p class="font-semibold text-xl leading-[22.5px]">{{ props.headOfFamilyData.gender === 'male' ? 'Pria' : 'Wanita' }}</p>
+                  <p class="font-semibold text-xl leading-[22.5px]">{{ headOfFamilyData.gender === 'male' ? 'Pria' : 'Wanita' }}</p>
                   <span class="font-medium text-desa-secondary">
                     Jenis Kelamin
                   </span>
@@ -178,7 +272,7 @@ const calculateAge = (dateOfBirth) => {
                   <img :src="IconSmsDarkGreen" class="flex size-6 shrink-0" alt="icon">
                 </div>
                 <div class="flex flex-col gap-1 w-full">
-                  <p class="font-semibold text-xl leading-[22.5px]">{{ props.headOfFamilyData.user?.email || 'Tidak ada email' }}</p>
+                  <p class="font-semibold text-xl leading-[22.5px]">{{ headOfFamilyData.user?.email || 'no data' }}</p>
                   <span class="font-medium text-desa-secondary">
                     Email Address
                   </span>
@@ -190,7 +284,7 @@ const calculateAge = (dateOfBirth) => {
                   <img :src="IconCallDarkGreen" class="flex size-6 shrink-0" alt="icon">
                 </div>
                 <div class="flex flex-col gap-1 w-full">
-                  <p class="font-semibold text-xl leading-[22.5px]">{{ props.headOfFamilyData.phone_number || 'Tidak ada nomor' }}</p>
+                  <p class="font-semibold text-xl leading-[22.5px]">{{ headOfFamilyData.phone_number || 'Tidak ada nomor' }}</p>
                   <span class="font-medium text-desa-secondary">
                     Nomor Hp
                   </span>
@@ -200,7 +294,7 @@ const calculateAge = (dateOfBirth) => {
             <section id="Anggota-Keluarga" class="flex flex-col rounded-3xl p-6 gap-6 bg-white">
               <div class="flex items-center justify-between">
                 <div class="flex flex-col gap-[6px]">
-                  <p class="font-semibold text-[32px] leading-10">{{ (props.familyMembersData || props.headOfFamilyData?.family_members || []).length }}</p>
+                  <p class="font-semibold text-[32px] leading-10">{{ (familyMembersData || props.headOfFamilyData?.family_members || []).length }}</p>
                   <p class="font-medium leading-5 text-desa-secondary">Anggota Keluarga</p>
                 </div>
                 <img :src="IconProfile2UserForeshadow" class="flex size-12 shrink-0" alt="icon">
@@ -274,100 +368,136 @@ const calculateAge = (dateOfBirth) => {
                 </button>
               </div>
               <div id="Tabs-Content" class="flex flex-col">
+                <!-- Bansos Tab Content -->
                 <div id="Bansos" class="flex flex-col gap-6">
-                  <div class="card flex flex-col rounded-2xl border border-desa-background p-4 gap-4">
+                  <div v-if="loadingBansos" class="text-center py-4">
+                    <p>Loading bansos data...</p>
+                  </div>
+                  <div v-else-if="bansosData.length === 0" class="text-center py-4">
+                    <p>No bansos applications found.</p>
+                  </div>
+                  <div 
+                    v-for="bansos in bansosData" 
+                    :key="bansos.id"
+                    class="card flex flex-col rounded-2xl border border-desa-background p-4 gap-4"
+                  >
                     <div class="flex items-center justify-between">
-                      <p class="font-medium text-sm text-desa-secondary">Tue, 13 Sep 2025 </p>
+                      <p class="font-medium text-sm text-desa-secondary">{{ new Date(bansos.created_at).toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) }}</p>
                       <img :src="IconCalendar2SecondaryGreen" class="flex size-[18px] shrink-0" alt="icon">
                     </div>
                     <hr class="border-desa-background">
-                    <p class="font-semibold text-lg">Bantuan Untuk Rakyat Kurang Mampu</p>
+                    <p class="font-semibold text-lg">{{ bansos.socialAssistance?.name || 'Bantuan Sosial' }}</p>
                     <div class="flex items-center gap-3">
                       <div class="flex size-[52px] shrink-0 items-center justify-center rounded-2xl bg-desa-foreshadow">
                         <img :src="IconMoneyDarkGreen" alt="icon">
                       </div>
                       <div class="flex flex-col gap-[6px] w-full">
-                        <p class="font-semibold text-lg leading-5">Rp120.000.000</p>
+                        <p class="font-semibold text-lg leading-5">{{ bansos.socialAssistance?.amount || 'N/A' }}</p>
                         <p class="font-medium text-sm text-desa-secondary">Nominal Pengajuan</p>
                       </div>
-                      <div class="badge rounded-full p-3 gap-2 flex w-[100px] justify-center shrink-0 bg-desa-yellow">
-                        <span class="font-semibold text-xs text-white uppercase">Menunggu</span>
+                      <div 
+                        class="badge rounded-full p-3 gap-2 flex w-[100px] justify-center shrink-0"
+                        :class="{
+                          'bg-desa-yellow': bansos.status === 'pending',
+                          'bg-desa-dark-green': bansos.status === 'approved',
+                          'bg-desa-red': bansos.status === 'rejected'
+                        }"
+                      >
+                        <span class="font-semibold text-xs text-white uppercase">
+                          {{ bansos.status === 'pending' ? 'Menunggu' : bansos.status === 'approved' ? 'Diterima' : 'Ditolak' }}
+                        </span>
                       </div>
                     </div>
                     <hr class="border-desa-background">
                     <div class="flex items-center justify-between">
                       <p class="font-medium text-sm text-desa-secondary">Nominal Pengajuan:</p>
-                      <p class="font-medium leading-5 text-desa-red">Rp2.500.000</p>
-                    </div>
-                  </div>
-                  <div class="card flex flex-col rounded-2xl border border-desa-background p-4 gap-4">
-                    <div class="flex items-center justify-between">
-                      <p class="font-medium text-sm text-desa-secondary">Tue, 13 Sep 2025 </p>
-                      <img :src="IconCalendar2SecondaryGreen" class="flex size-[18px] shrink-0" alt="icon">
-                    </div>
-                    <hr class="border-desa-background">
-                    <p class="font-semibold text-lg">Bantuan Pangan Sehari-hari</p>
-                    <div class="flex items-center gap-3">
-                      <div class="flex size-[52px] shrink-0 items-center justify-center rounded-2xl bg-desa-foreshadow">
-                        <img :src="IconBag2DarkGreen" alt="icon">
-                      </div>
-                      <div class="flex flex-col gap-[6px] w-full">
-                        <p class="font-semibold text-lg leading-5">Beras 200 Ton</p>
-                        <p class="font-medium text-sm text-desa-secondary">Bahan Pokok</p>
-                      </div>
-                      <div class="badge rounded-full p-3 gap-2 flex w-[100px] justify-center shrink-0 bg-desa-dark-green">
-                        <span class="font-semibold text-xs text-white uppercase">Diterima</span>
-                      </div>
-                    </div>
-                    <hr class="border-desa-background">
-                    <div class="flex items-center justify-between">
-                      <p class="font-medium text-sm text-desa-secondary">Nominal Pengajuan:</p>
-                      <p class="font-medium leading-5 text-desa-red">Beras 2kg</p>
+                      <p class="font-medium leading-5 text-desa-red">{{ bansos.amount || 'N/A' }}</p>
                     </div>
                   </div>
                 </div>
+                
+                <!-- Events Tab Content -->
                 <div id="Events" class="flex flex-col gap-6 hidden">
-                  <div class="card flex flex-col rounded-2xl border border-desa-background p-4 gap-4">
+                  <div v-if="loadingEvents" class="text-center py-4">
+                    <p>Loading events data...</p>
+                  </div>
+                  <div v-else-if="eventsData.length === 0" class="text-center py-4">
+                    <p>No events found.</p>
+                  </div>
+                  <div 
+                    v-for="event in eventsData" 
+                    :key="event.id"
+                    class="card flex flex-col rounded-2xl border border-desa-background p-4 gap-4"
+                  >
                     <div class="flex items-center justify-between">
-                      <p class="font-medium text-sm text-desa-secondary">Fri, 13 Sep 2025</p>
+                      <p class="font-medium text-sm text-desa-secondary">{{ new Date(event.date).toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) }}</p>
                       <img :src="IconCalendar2SecondaryGreen" class="flex size-[18px] shrink-0" alt="icon">
                     </div>
                     <hr class="border-desa-background">
                     <div class="flex items-center gap-3">
                       <div class="flex w-20 h-[60px] shrink-0 items-center justify-center rounded-2xl bg-desa-foreshadow overflow-hidden">
-                        <img src="@/assets/images/thumbnails/event-image-1.png" class="w-full h-full object-cover" alt="thumbnail">
+                        <img 
+                          :src="event.thumbnail ? `/storage/${event.thumbnail}` : '@/assets/images/thumbnails/event-image-1.png'" 
+                          class="w-full h-full object-cover" 
+                          alt="thumbnail"
+                        >
                       </div>
                       <div class="flex flex-col gap-[6px] w-full">
-                        <p class="font-semibold leading-5 line-clamp-1">Belajar HTML Dasar Bersama</p>
+                        <p class="font-semibold leading-5 line-clamp-1">{{ event.name || 'Event Name' }}</p>
                         <div class="flex items-center gap-1">
                           <img :src="IconProfile2UserOrange" class="flex size-[18px] shrink-0" alt="icon">
-                          <p class="font-medium text-sm text-desa-orange">9210 total partisipasi</p>
+                          <p class="font-medium text-sm text-desa-orange">{{ event.participants_count || 0 }} total partisipasi</p>
                         </div>
                       </div>
                     </div>
                     <hr class="border-desa-background">
                     <div class="flex items-center justify-between">
                       <p class="font-medium text-sm text-desa-secondary">Harga Event:</p>
-                      <p class="font-medium leading-5 text-desa-red">Rp49.000</p>
+                      <p class="font-medium leading-5 text-desa-red">{{ event.price ? `Rp${parseInt(event.price).toLocaleString('id-ID')}` : 'Gratis' }}</p>
                     </div>
                   </div>
                 </div>
+                
+                <!-- Applicants Tab Content -->
                 <div id="Applicants" class="flex flex-col gap-6 hidden">
-                  <div class="card flex flex-col rounded-2xl border border-desa-background p-4 gap-4">
+                  <div v-if="loadingApplicants" class="text-center py-4">
+                    <p>Loading applicants data...</p>
+                  </div>
+                  <div v-else-if="applicantsData.length === 0" class="text-center py-4">
+                    <p>No job applications found.</p>
+                  </div>
+                  <div 
+                    v-for="applicant in applicantsData" 
+                    :key="applicant.id"
+                    class="card flex flex-col rounded-2xl border border-desa-background p-4 gap-4"
+                  >
                     <div class="flex items-center justify-between gap-3">
                       <div class="flex w-20 h-[60px] shrink-0 items-center justify-center rounded-2xl bg-desa-foreshadow overflow-hidden">
-                        <img src="@/assets/images/thumbnails/PT Cingluh.jpg" class="w-full h-full object-cover" alt="thumbnail">
+                        <img 
+                          :src="applicant.jobVacancy?.company_logo ? `/storage/${applicant.jobVacancy.company_logo}` : '@/assets/images/thumbnails/PT Cingluh.jpg'" 
+                          class="w-full h-full object-cover" 
+                          alt="thumbnail"
+                        >
                       </div>
-                      <div class="badge rounded-full p-3 gap-2 flex w-[100px] justify-center shrink-0 bg-desa-yellow">
-                        <span class="font-semibold text-xs text-white uppercase">Menunggu</span>
+                      <div 
+                        class="badge rounded-full p-3 gap-2 flex w-[100px] justify-center shrink-0"
+                        :class="{
+                          'bg-desa-yellow': applicant.status === 'pending',
+                          'bg-desa-dark-green': applicant.status === 'approved',
+                          'bg-desa-red': applicant.status === 'rejected'
+                        }"
+                      >
+                        <span class="font-semibold text-xs text-white uppercase">
+                          {{ applicant.status === 'pending' ? 'Menunggu' : applicant.status === 'approved' ? 'Diterima' : 'Ditolak' }}
+                        </span>
                       </div>
                     </div>
                     <div class="flex flex-col gap-1">
-                      <p class="font-semibold leading-5">PT. Cingluh</p>
+                      <p class="font-semibold leading-5">{{ applicant.jobVacancy?.title || 'Job Title' }}</p>
                       <p class="font-medium leading-5 text-desa-secondary">
                         Penanggung jawab: 
                         <span class="font-semibold text-desa-dark-green">
-                          PT. Cingluh
+                          {{ applicant.jobVacancy?.company_name || 'Company Name' }}
                         </span>
                       </p>
                     </div>
@@ -377,7 +507,7 @@ const calculateAge = (dateOfBirth) => {
                         <img :src="IconCalendar2SecondaryGreen" class="flex size-6" alt="icon">
                       </div>
                       <div>
-                        <p class="font-semibold leading-5 text-desa-dark-green">13 Sep 2025</p>
+                        <p class="font-semibold leading-5 text-desa-dark-green">{{ new Date(applicant.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) }}</p>
                         <p class="font-medium text-sm text-desa-secondary">Tanggal Pelaksanaan</p>
                       </div>
                     </div>

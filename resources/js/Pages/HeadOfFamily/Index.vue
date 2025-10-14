@@ -3,7 +3,7 @@ import { ref, onMounted, onBeforeMount, computed, watch } from "vue";
 import { router } from "@inertiajs/vue3";
 import { useAuthStore } from "@/stores/auth";
 import { useHeadOfFamily } from "@/composables/useHeadOfFamily";
-import Sidebar from "@/components/sidebar/Sidebar.vue";
+import MainLayout from "@/layouts/Main.vue";
 import Button from "@/components/ui/Button.vue";
 import Input from "@/components/ui/Input.vue";
 import IconSearchSecondaryGreen from "@/assets/images/icons/search-normal-secondary-green.svg";
@@ -50,15 +50,9 @@ const viewFamilyMembers = (id) => {
     router.visit(`/kepala-rumah/${id}/anggota-keluarga`);
 };
 
-// const manageHeadOfFamily = (userId) => {
-//     router.visit(`/kepala-rumah/${userId}/manage`);
-// };
-
 const manageHeadOfFamily = (userId) => {
--  router.visit(`/kepala-rumah/${userId}/manage`);
-+  router.visit(`/kepala-rumah/${headOfFamily.id}/manage`);
+    router.visit(`/kepala-rumah/${userId}/manage`);
 };
-
 
 const editHeadOfFamily = (userId) => {
     router.visit(`/kepala-rumah/${userId}/edit`);
@@ -161,238 +155,235 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="flex">
-        <Sidebar />
-        <div id="Main-Container" class="flex flex-col flex-1">
-            <div
-                id="Content"
-                class="relative flex flex-col flex-1 gap-6 p-6 pb-[30px] w-full shrink-0"
+    <MainLayout>
+        <div
+            id="Content"
+            class="relative flex flex-col flex-1 gap-6 p-6 pb-[30px] w-full shrink-0"
+        >
+            <div id="Header" class="flex items-center justify-between">
+                <h1 class="font-semibold text-2xl">Kepala Rumah</h1>
+                <Button
+                    label="Add New"
+                    :icon="IconAddSquare"
+                    @click="router.visit('/kepala-rumah/create')"
+                    class="bg-desa-dark-green"
+                />
+            </div>
+            <section
+                id="List-Kepala-Rumah"
+                class="flex flex-col gap-[20px]"
             >
-                <div id="Header" class="flex items-center justify-between">
-                    <h1 class="font-semibold text-2xl">Kepala Rumah</h1>
-                    <Button
-                        label="Add New"
-                        :icon="IconAddSquare"
-                        @click="router.visit('/kepala-rumah/create')"
-                        class="bg-desa-dark-green"
-                    />
-                </div>
-                <section
-                    id="List-Kepala-Rumah"
-                    class="flex flex-col gap-[20px]"
+                <div
+                    id="Page-Search"
+                    class="flex items-center justify-between"
                 >
-                    <div
-                        id="Page-Search"
-                        class="flex items-center justify-between"
-                    >
-                        <div class="flex flex-col gap-3 w-[370px] shrink-0">
-                            <div class="relative group peer w-full valid">
-                                <Input
-                                    v-model="searchQuery"
-                                    placeholder="Cari nama Kepala Rumah atau NIK"
-                                    class="appearance-none outline-none w-full h-14 rounded-2xl ring-[1.5px] ring-desa-background focus:ring-desa-black py-4 pl-12 pr-6 gap-2 font-medium placeholder:text-desa-secondary transition-all duration-300"
-                                />
-                                <div
-                                    class="absolute transform -translate-y-1/2 top-1/2 left-4 flex size-6 shrink-0"
-                                >
-                                    <img
-                                        :src="IconUserSearchSecondary"
-                                        class="size-6 hidden group-has-[:placeholder-shown]:flex"
-                                        alt="icon"
-                                    />
-                                    <img
-                                        :src="IconUserSearchBlack"
-                                        class="size-6 flex group-has-[:placeholder-shown]:hidden"
-                                        alt="icon"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                        <div class="options flex items-center gap-4">
-                            <div class="flex items-center gap-[10px]">
-                                <span class="font-medium leading-5">Show</span>
-                                <div class="relative">
-                                    <select
-                                        v-model="entriesPerPage"
-                                        class="appearance-none outline-none w-full h-14 rounded-2xl ring-[1.5px] ring-desa-background focus:ring-desa-black py-4 px-6 pr-[52px] gap-2 font-medium placeholder:text-desa-secondary transition-all duration-300"
-                                    >
-                                        <option value="5" selected>
-                                            5 Entries
-                                        </option>
-                                        <option value="10">10 Entries</option>
-                                        <option value="20">20 Entries</option>
-                                        <option value="30">30 Entries</option>
-                                        <option value="40">40 Entries</option>
-                                        <option value="50">50 Entries</option>
-                                    </select>
-                                    <img
-                                        :src="IconArrowDownBlack"
-                                        class="flex size-6 shrink-0 absolute transform -translate-y-1/2 top-1/2 right-6"
-                                        alt="icon"
-                                    />
-                                </div>
-                            </div>
-                            <button
-                                type="button"
-                                class="flex items-center gap-1 h-14 w-fit rounded-2xl border border-desa-background bg-white py-4 px-6"
+                    <div class="flex flex-col gap-3 w-[370px] shrink-0">
+                        <div class="relative group peer w-full valid">
+                            <Input
+                                v-model="searchQuery"
+                                placeholder="Cari nama Kepala Rumah atau NIK"
+                                class="appearance-none outline-none w-full h-14 rounded-2xl ring-[1.5px] ring-desa-background focus:ring-desa-black py-4 pl-12 pr-6 gap-2 font-medium placeholder:text-desa-secondary transition-all duration-300"
+                            />
+                            <div
+                                class="absolute transform -translate-y-1/2 top-1/2 left-4 flex size-6 shrink-0"
                             >
                                 <img
-                                    :src="IconFilterBlack"
-                                    class="flex size-6 shrink-0"
+                                    :src="IconUserSearchSecondary"
+                                    class="size-6 hidden group-has-[:placeholder-shown]:flex"
                                     alt="icon"
                                 />
-                                <span class="font-medium leading-5"
-                                    >Filter</span
-                                >
-                            </button>
-                        </div>
-                    </div>
-
-                    <div
-                        v-for="headOfFamily in headOfFamilies"
-                        :key="headOfFamily.id"
-                        class="card flex items-center justify-between rounded-3xl p-6 bg-white"
-                    >
-                        <div class="flex items-center gap-3 w-[260px]">
-                            <div
-                                class="flex size-16 shrink-0 rounded-full overflow-hidden bg-desa-foreshadow"
-                            >
                                 <img
-                                    :src="headOfFamily.photo"
-                                    class="w-full h-full object-cover"
-                                    :alt="headOfFamily.name"
+                                    :src="IconUserSearchBlack"
+                                    class="size-6 flex group-has-[:placeholder-shown]:hidden"
+                                    alt="icon"
                                 />
                             </div>
-                            <div class="flex flex-col gap-[6px]">
-                                <p
-                                    class="font-semibold text-lg leading-[22.5px] w-[184px] truncate"
+                        </div>
+                    </div>
+                    <div class="options flex items-center gap-4">
+                        <div class="flex items-center gap-[10px]">
+                            <span class="font-medium leading-5">Show</span>
+                            <div class="relative">
+                                <select
+                                    v-model="entriesPerPage"
+                                    class="appearance-none outline-none w-full h-14 rounded-2xl ring-[1.5px] ring-desa-background focus:ring-desa-black py-4 px-6 pr-[52px] gap-2 font-medium placeholder:text-desa-secondary transition-all duration-300"
                                 >
-                                    {{ headOfFamily.name }}
-                                </p>
-                                <p class="flex items-center gap-1">
-                                    <img
-                                        :src="IconBriefcaseSecondary"
-                                        class="flex size-[18px] shrink-0"
-                                        alt="icon"
-                                    />
-                                    <span
-                                        class="font-medium text-sm text-desa-secondary"
-                                        >{{ headOfFamily.occupation }}</span
-                                    >
-                                </p>
+                                    <option value="5" selected>
+                                        5 Entries
+                                    </option>
+                                    <option value="10">10 Entries</option>
+                                    <option value="20">20 Entries</option>
+                                    <option value="30">30 Entries</option>
+                                    <option value="40">40 Entries</option>
+                                    <option value="50">50 Entries</option>
+                                </select>
+                                <img
+                                    :src="IconArrowDownBlack"
+                                    class="flex size-6 shrink-0 absolute transform -translate-y-1/2 top-1/2 right-6"
+                                    alt="icon"
+                                />
                             </div>
                         </div>
-                        <div class="flex flex-col gap-1 w-[180px] shrink-0">
+                        <button
+                            type="button"
+                            class="flex items-center gap-1 h-14 w-fit rounded-2xl border border-desa-background bg-white py-4 px-6"
+                        >
+                            <img
+                                :src="IconFilterBlack"
+                                class="flex size-6 shrink-0"
+                                alt="icon"
+                            />
+                            <span class="font-medium leading-5"
+                                >Filter</span
+                            >
+                        </button>
+                    </div>
+                </div>
+
+                <div
+                    v-for="headOfFamily in headOfFamilies"
+                    :key="headOfFamily.id"
+                    class="card flex items-center justify-between rounded-3xl p-6 bg-white"
+                >
+                    <div class="flex items-center gap-3 w-[260px]">
+                        <div
+                            class="flex size-16 shrink-0 rounded-full overflow-hidden bg-desa-foreshadow"
+                        >
+                            <img
+                                :src="headOfFamily.photo"
+                                class="w-full h-full object-cover"
+                                :alt="headOfFamily.name"
+                            />
+                        </div>
+                        <div class="flex flex-col gap-[6px]">
+                            <p
+                                class="font-semibold text-lg leading-[22.5px] w-[184px] truncate"
+                            >
+                                {{ headOfFamily.name }}
+                            </p>
                             <p class="flex items-center gap-1">
                                 <img
-                                    :src="IconKeyboardSecondary"
+                                    :src="IconBriefcaseSecondary"
                                     class="flex size-[18px] shrink-0"
                                     alt="icon"
                                 />
                                 <span
                                     class="font-medium text-sm text-desa-secondary"
-                                    >NIK</span
+                                    >{{ headOfFamily.occupation }}</span
                                 >
                             </p>
-                            <p class="font-semibold leading-5">
-                                {{ headOfFamily.nik }}
-                            </p>
                         </div>
-                        <p
-                            class="flex items-center rounded-full w-[224px] shrink-0 py-[14px] px-4 gap-1 bg-desa-blue/10"
-                        >
+                    </div>
+                    <div class="flex flex-col gap-1 w-[180px] shrink-0">
+                        <p class="flex items-center gap-1">
                             <img
-                                :src="IconProfile2UserBlue"
+                                :src="IconKeyboardSecondary"
                                 class="flex size-[18px] shrink-0"
                                 alt="icon"
                             />
-                            <span class="font-medium text-desa-blue"
-                                >{{ headOfFamily.familyMembers }} Anggota
-                                Keluarga</span
+                            <span
+                                class="font-medium text-sm text-desa-secondary"
+                                >NIK</span
                             >
                         </p>
-                        <button
-                            @click="manageHeadOfFamily(headOfFamily.userId)"
-                            class="flex items-center shrink-0 gap-[10px] rounded-2xl py-4 px-6 bg-desa-black"
-                        >
-                            <span class="font-medium text-white">Manage</span>
-                        </button>
-
+                        <p class="font-semibold leading-5">
+                            {{ headOfFamily.nik }}
+                        </p>
                     </div>
-                </section>
-
-                <nav id="Pagination">
-                    <ul class="flex items-center gap-3">
-                        <li class="group">
-                            <button
-                                type="button"
-                                :disabled="currentPage === 1"
-                                @click="prevPage"
-                                class="group/arrow flex size-11 shrink-0 items-center justify-center rounded-full bg-desa-foreshadow disabled:!bg-desa-foreshadow group-hover:bg-desa-dark-green transition-setup"
-                            >
-                                <img
-                                    :src="IconArrowLeftDarkGreen"
-                                    class="flex size-6 shrink-0 group-hover:hidden group-disabled/arrow:!hidden"
-                                    alt="icon"
-                                />
-                                <img
-                                    :src="IconArrowLeftForeshadow"
-                                    class="hidden size-6 shrink-0 group-hover:flex group-disabled/arrow:!hidden"
-                                    alt="icon"
-                                />
-                                <img
-                                    :src="IconDisabledArrow"
-                                    class="hidden size-6 shrink-0 group-disabled/arrow:!flex"
-                                    alt="icon"
-                                />
-                            </button>
-                        </li>
-
-                        <li
-                            v-for="page in totalPages"
-                            :key="page"
-                            class="group"
-                            :class="{ active: page === currentPage }"
+                    <p
+                        class="flex items-center rounded-full w-[224px] shrink-0 py-[14px] px-4 gap-1 bg-desa-blue/10"
+                    >
+                        <img
+                            :src="IconProfile2UserBlue"
+                            class="flex size-[18px] shrink-0"
+                            alt="icon"
+                        />
+                        <span class="font-medium text-desa-blue"
+                            >{{ headOfFamily.familyMembers }} Anggota
+                            Keluarga</span
                         >
-                            <button
-                                @click="goToPage(page)"
-                                class="flex size-11 shrink-0 items-center justify-center rounded-full bg-desa-foreshadow group-hover:bg-desa-dark-green group-[.active]:bg-desa-dark-green transition-setup"
-                            >
-                                <span
-                                    class="text-desa-dark-green font-semibold group-[.active]:text-desa-foreshadow group-hover:text-desa-foreshadow transition-setup"
-                                >
-                                    {{ page }}
-                                </span>
-                            </button>
-                        </li>
+                    </p>
+                    <button
+                        @click="manageHeadOfFamily(headOfFamily.userId)"
+                        class="flex items-center shrink-0 gap-[10px] rounded-2xl py-4 px-6 bg-desa-black"
+                    >
+                        <span class="font-medium text-white">Manage</span>
+                    </button>
 
-                        <li class="group">
-                            <button
-                                type="button"
-                                :disabled="currentPage === totalPages"
-                                @click="nextPage"
-                                class="group/arrow flex size-11 shrink-0 items-center justify-center rounded-full bg-desa-foreshadow disabled:!bg-desa-foreshadow group-hover:bg-desa-dark-green transition-setup"
+                </div>
+            </section>
+
+            <nav id="Pagination">
+                <ul class="flex items-center gap-3">
+                    <li class="group">
+                        <button
+                            type="button"
+                            :disabled="currentPage === 1"
+                            @click="prevPage"
+                            class="group/arrow flex size-11 shrink-0 items-center justify-center rounded-full bg-desa-foreshadow disabled:!bg-desa-foreshadow group-hover:bg-desa-dark-green transition-setup"
+                        >
+                            <img
+                                :src="IconArrowLeftDarkGreen"
+                                class="flex size-6 shrink-0 group-hover:hidden group-disabled/arrow:!hidden"
+                                alt="icon"
+                            />
+                            <img
+                                :src="IconArrowLeftForeshadow"
+                                class="hidden size-6 shrink-0 group-hover:flex group-disabled/arrow:!hidden"
+                                alt="icon"
+                            />
+                            <img
+                                :src="IconDisabledArrow"
+                                class="hidden size-6 shrink-0 group-disabled/arrow:!flex"
+                                alt="icon"
+                            />
+                        </button>
+                    </li>
+
+                    <li
+                        v-for="page in totalPages"
+                        :key="page"
+                        class="group"
+                        :class="{ active: page === currentPage }"
+                    >
+                        <button
+                            @click="goToPage(page)"
+                            class="flex size-11 shrink-0 items-center justify-center rounded-full bg-desa-foreshadow group-hover:bg-desa-dark-green group-[.active]:bg-desa-dark-green transition-setup"
+                        >
+                            <span
+                                class="text-desa-dark-green font-semibold group-[.active]:text-desa-foreshadow group-hover:text-desa-foreshadow transition-setup"
                             >
-                                <img
-                                    :src="IconArrowLeftDarkGreen"
-                                    class="flex size-6 shrink-0 rotate-180 group-hover:hidden group-disabled/arrow:!hidden"
-                                    alt="icon"
-                                />
-                                <img
-                                    :src="IconArrowLeftForeshadow"
-                                    class="hidden size-6 shrink-0 rotate-180 group-hover:flex group-disabled/arrow:!hidden"
-                                    alt="icon"
-                                />
-                                <img
-                                    :src="IconDisabledArrow"
-                                    class="hidden size-6 shrink-0 rotate-180 group-disabled/arrow:!flex"
-                                    alt="icon"
-                                />
-                            </button>
-                        </li>
-                    </ul>
-                </nav>
-            </div>
+                                {{ page }}
+                            </span>
+                        </button>
+                    </li>
+
+                    <li class="group">
+                        <button
+                            type="button"
+                            :disabled="currentPage === totalPages"
+                            @click="nextPage"
+                            class="group/arrow flex size-11 shrink-0 items-center justify-center rounded-full bg-desa-foreshadow disabled:!bg-desa-foreshadow group-hover:bg-desa-dark-green transition-setup"
+                        >
+                            <img
+                                :src="IconArrowLeftDarkGreen"
+                                class="flex size-6 shrink-0 rotate-180 group-hover:hidden group-disabled/arrow:!hidden"
+                                alt="icon"
+                            />
+                            <img
+                                :src="IconArrowLeftForeshadow"
+                                class="hidden size-6 shrink-0 rotate-180 group-hover:flex group-disabled/arrow:!hidden"
+                                alt="icon"
+                            />
+                            <img
+                                :src="IconDisabledArrow"
+                                class="hidden size-6 shrink-0 rotate-180 group-disabled/arrow:!flex"
+                                alt="icon"
+                            />
+                        </button>
+                    </li>
+                </ul>
+            </nav>
         </div>
-    </div>
+    </MainLayout>
 </template>

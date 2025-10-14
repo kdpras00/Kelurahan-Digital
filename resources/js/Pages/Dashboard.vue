@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, onBeforeMount } from "vue";
 import { useAuthStore } from "@/stores/auth";
-import Sidebar from "@/components/sidebar/Sidebar.vue";
+import MainLayout from "@/layouts/Main.vue";
 import StatCard from "@/components/dashboard/StatCard.vue";
 import SocialAssistanceItem from "@/components/dashboard/SocialAssistanceItem.vue";
 import ApplicantCard from "@/components/dashboard/ApplicantCard.vue";
@@ -31,9 +31,8 @@ onMounted(fetchDashboardData);
 </script>
 
 <template>
-    <div class="flex" role="main" aria-label="Dashboard">
-        <Sidebar />
-        <main class="flex-1 p-6">
+    <MainLayout>
+        <div class="flex-1 p-6" role="main" aria-label="Dashboard">
             <h1 class="font-semibold text-2xl mb-6">Desa Statistics</h1>
 
             <!-- Loading State -->
@@ -746,6 +745,6 @@ onMounted(fetchDashboardData);
                     </section>
                 </div>
             </div>
-        </main>
-    </div>
+        </div>
+    </MainLayout>
 </template>
